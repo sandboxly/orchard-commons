@@ -1471,8 +1471,11 @@ name = "orchard-kit"
 version = "0.2.0"
 dependencies = [
  "arboard",
+ "dirs",
  "orchard-grid",
+ "orchard-places",
  "orchard-theme",
+ "tempfile",
 ]
 
 [[package]]

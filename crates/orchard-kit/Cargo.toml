@@ -6,7 +6,7 @@ license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
 repository.workspace = true
-description = "The UI kit the Orchard apps share: background tasks, input events, grid widgets, dialog forms and the clipboard"
+description = "The UI kit the Orchard apps share: background tasks, input events, grid widgets, dialog forms, the bookmark menu, the file picker and the clipboard"
 
 [features]
 default = ["clipboard"]
@@ -16,4 +16,9 @@ clipboard = ["dep:arboard"]
 [dependencies]
 orchard-grid.workspace = true
 orchard-theme.workspace = true
+orchard-places.workspace = true
+dirs.workspace = true
 arboard = { version = "3.6", default-features = false, optional = true }
+
+[dev-dependencies]
+tempfile.workspace = true

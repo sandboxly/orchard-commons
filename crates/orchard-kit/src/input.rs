@@ -20,6 +20,12 @@ pub enum Named {
     F(u8),
 }
 
+/// A key hint written with "⌘" as shown on this platform: as it is on
+/// macOS, "Ctrl+" for the "⌘" elsewhere ("⌘D bookmarks" → "Ctrl+D bookmarks").
+pub fn primary_label(text: &str) -> String {
+    if cfg!(target_os = "macos") { text.to_string() } else { text.replace('⌘', "Ctrl+") }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Key {
     /// A character key, as on the key cap without modifiers (lower case).
