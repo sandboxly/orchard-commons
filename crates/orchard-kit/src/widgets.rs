@@ -281,13 +281,15 @@ pub struct TextField {
     /// The text starts in the field's first cell and may use its last
     /// (narrow fields that must show all their text, like "#rrggbb" in 9 cells).
     pub flush: bool,
+    /// No ⌘V / Ctrl+V paste and no ⌘⌫ (see [`TextField::plain`]).
+    pub plain: bool,
 }
 
 impl TextField {
     pub fn new(text: impl Into<String>) -> Self {
         let text = text.into();
         let cursor = text.chars().count();
-        TextField { text, cursor, flush: false }
+        TextField { text, cursor, flush: false, plain: false }
     }
 
     /// The same field without the one-cell inset (see [`TextField::flush`]).
@@ -296,16 +298,26 @@ impl TextField {
         self
     }
 
+    /// The same field without the clipboard and delete-to-start shortcuts:
+    /// modifiers are ignored, so Ctrl+Left moves like Left and Ctrl+Backspace
+    /// deletes one character.
+    pub fn plain(mut self) -> Self {
+        self.plain = true;
+        self
+    }
+
     fn byte(&self, i: usize) -> usize {
         self.text.char_indices().nth(i).map_or(self.text.len(), |(b, _)| b)
     }
 
     /// Edit keys; returns whether the key was taken. ⌘V / Ctrl+V pastes
-    /// (line breaks become spaces), ⌘⌫ deletes to the start.
+    /// (line breaks become spaces), ⌘⌫ (Ctrl+Backspace) deletes to the start,
+    /// and other ⌘ / Ctrl keys are left to the caller, unless the field is
+    /// [`plain`](TextField::plain).
     pub fn handle(&mut self, ev: &crate::input::KeyEvent) -> bool {
         use crate::input::{Key, Named};
         let n = self.text.chars().count();
-        if ev.mods.primary() {
+        if !self.plain && ev.mods.primary() {
             match &ev.key {
                 Key::Char('v') => {
                     if let Some(t) = crate::clipboard::text() {
@@ -358,7 +370,7 @@ impl TextField {
 
     /// Replace the text; the cursor goes to its end.
     pub fn set_text(&mut self, text: &str) {
-        *self = TextField { flush: self.flush, ..TextField::new(text) };
+        *self = TextField { flush: self.flush, plain: self.plain, ..TextField::new(text) };
     }
 
     /// Put the cursor at a click on column `col` of the field drawn in `r`.
@@ -460,6 +472,21 @@ mod tests {
         let primary = crate::input::Mods { ctrl: true, logo: true, ..Default::default() };
         assert!(t.handle(&KeyEvent::named(Named::Backspace).with(primary)));
         assert_eq!((t.text.as_str(), t.cursor), ("c", 0));
+    }
+
+    #[test]
+    fn plain_fields_ignore_modifiers() {
+        let primary = crate::input::Mods { ctrl: true, logo: true, ..Default::default() };
+        let mut t = TextField::new("abc");
+        assert!(!t.handle(&KeyEvent::named(Named::Left).with(primary)));
+        let mut t2 = TextField::new("abc").plain();
+        assert!(t2.handle(&KeyEvent::named(Named::Left).with(primary)));
+        assert!(t2.handle(&KeyEvent::named(Named::Backspace).with(primary)));
+        assert_eq!((t2.text.as_str(), t2.cursor), ("ac", 1));
+        t2.set_text("xyz");
+        assert!(t2.plain); // kept
+        t.set_text("");
+        assert!(!t.plain);
     }
 
     #[test]

@@ -850,4 +850,10 @@ mod tests {
         assert_eq!(a.scheme_setting(true), "dark_scheme");
         assert_eq!(a.scheme_setting(false), "light_scheme");
     }
+
+    #[test]
+    fn string_literals_like_python_json() {
+        // json.dumps(str) in CPython (moved from Orchard Commander's pyjson tests).
+        assert_eq!(string_literal("a\"b\\"), r#""a\"b\\""#);
+    }
 }

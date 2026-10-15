@@ -1,8 +1,8 @@
 //! winit's keyboard events converted to [`crate::input`]'s (for the
 //! binary's event loop). Mouse buttons and scrolling stay with each app.
 //!
-//! The keyboard's play/pause media key arrives as Space, so it plays and
-//! pauses in the Music Player (the Download Manager ignores it).
+//! Media keys are left out (`None`): an app that wants one (the Music
+//! Player's play/pause) maps it itself before calling [`convert_key`].
 
 use orchard_grid::winit::event::KeyEvent as WKeyEvent;
 use orchard_grid::winit::keyboard::{Key as WKey, ModifiersState, NamedKey};
@@ -50,7 +50,6 @@ fn named(n: &NamedKey, m: Mods) -> Option<Result<Named, KeyEvent>> {
         NamedKey::Insert => Named::Insert,
         NamedKey::Tab => Named::Tab,
         NamedKey::Space => return Some(Err(KeyEvent { key: Key::Char(' '), mods: m, text: Some(" ".into()) })),
-        NamedKey::MediaPlayPause => return Some(Err(KeyEvent::char(' '))),
         n => {
             let f = format!("{n:?}");
             Named::F(f.strip_prefix('F').and_then(|d| d.parse::<u8>().ok())?)
@@ -73,10 +72,10 @@ mod tests {
     }
 
     #[test]
-    fn play_pause_is_space() {
-        // The Music Player plays and pauses with it, whatever modifiers are held.
+    fn media_keys_are_left_to_the_app() {
+        // Typed as Space it would press buttons and type into text fields.
         let shift = Mods { shift: true, ..Mods::default() };
-        assert_eq!(named(&NamedKey::MediaPlayPause, shift), Some(Err(KeyEvent::char(' '))));
-        assert_eq!(KeyEvent::char(' ').key, Key::Char(' '));
+        assert_eq!(named(&NamedKey::MediaPlayPause, shift), None);
+        assert_eq!(named(&NamedKey::MediaTrackNext, Mods::default()), None);
     }
 }
