@@ -1,0 +1,72 @@
+name: CI
+
+# Branches only: no tag trigger, no release upload, no publishing anywhere.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  # Smaller debug builds (disk space on the runners); backtraces keep lines.
+  CARGO_PROFILE_DEV_DEBUG: line-tables-only
+  RUST_BACKTRACE: "1"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22.04: the oldest glibc the apps ship for.
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master, 2026-10
+        with:
+          # Pinned: each new stable brings deprecations and clippy lints, and
+          # CI runs clippy with -D warnings. Bump on purpose.
+          toolchain: "1.99.0"
+          components: clippy
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - name: System packages (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          # winit's keyboard libraries, a software GPU (Mesa lavapipe/llvmpipe)
+          # for the renderer tests, fonts (CJK too: the renderer tests draw
+          # wide characters).
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config \
+            libxkbcommon0 libxkbcommon-x11-0 libx11-xcb1 libwayland-client0 \
+            libvulkan1 mesa-vulkan-drivers libegl1 libegl-mesa0 libgl1-mesa-dri \
+            fontconfig fonts-dejavu-core fonts-noto-cjk
+
+      - name: Scratch config dir (tests never touch the real one)
+        run: |
+          mkdir -p "$RUNNER_TEMP/oc-config"
+          echo "ORCHARD_COMMANDER_CONFIG_DIR=$RUNNER_TEMP/oc-config" >> "$GITHUB_ENV"
+
+      - name: Clippy
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+
+      - name: Tests
+        run: cargo test --locked --workspace --all-features --no-fail-fast
