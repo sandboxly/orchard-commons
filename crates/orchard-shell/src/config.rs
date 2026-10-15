@@ -23,7 +23,7 @@ pub fn app_config_dir(env: &str, linux_name: &str, name: &str) -> PathBuf {
     dirs::config_dir().unwrap_or_else(std::env::temp_dir).join(name)
 }
 
-/// Write `path` whole or not at all: into "<name>.tmp" next to it (its
+/// Write `path` whole or not at all: into `<name>.tmp` next to it (its
 /// folder created first), then renamed over it.
 pub fn write_atomic(path: &Path, contents: impl AsRef<[u8]>) -> io::Result<()> {
     if let Some(dir) = path.parent() {
