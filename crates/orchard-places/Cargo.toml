@@ -1,0 +1,23 @@
+[package]
+name = "orchard-places"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+description = "Places for the Orchard apps' file pickers: Orchard Commander's bookmarks (read, added to, merged), the user's standard folders, drives and mounted volumes"
+
+[dependencies]
+orchard-theme.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+dirs.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+# The drive letters, without touching the drives.
+windows-sys = { workspace = true, features = ["Win32_Storage_FileSystem"] }
+
+[dev-dependencies]
+tempfile.workspace = true
