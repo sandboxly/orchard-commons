@@ -1,6 +1,5 @@
 //! The UI kit the Orchard apps share, on top of `orchard-grid`,
-//! `orchard-theme` and (for the bookmark
-//! menu) `orchard-places`:
+//! `orchard-theme` and (for the picker) `orchard-places`:
 //!
 //! - [`tasks`]: a worker pool whose results run on the UI thread.
 //! - [`input`]: window-system-neutral key and mouse events.
@@ -11,12 +10,15 @@
 //!   focused control.
 //! - [`menu`]: a popup menu with a hotkey column and submenus (the
 //!   bookmark menu).
+//! - [`picker`]: the file and folder picker, with places and Orchard
+//!   Commander's bookmarks.
 //! - [`clipboard`]: the clipboard's text, for paste.
 
 pub mod clipboard;
 pub mod form;
 pub mod input;
 pub mod menu;
+pub mod picker;
 pub mod tasks;
 pub mod widgets;
 pub mod winit;
