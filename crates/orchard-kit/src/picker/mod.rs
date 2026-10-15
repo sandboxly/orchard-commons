@@ -853,7 +853,7 @@ impl Picker {
         // Keys that work wherever the focus is.
         let primary = ev.mods.primary();
         match &ev.key {
-            Key::Named(Named::Escape) => return Outcome::Cancel,
+            Key::Named(Named::Escape | Named::F(10)) => return Outcome::Cancel,
             Key::Char('d') if primary => {
                 self.open_menu(screen);
                 return Outcome::Keep;
