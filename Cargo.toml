@@ -12,6 +12,7 @@ rust-version = "1.85"
 [workspace.dependencies]
 orchard-grid = { path = "crates/orchard-grid" }
 orchard-theme = { path = "crates/orchard-theme" }
+orchard-kit = { path = "crates/orchard-kit" }
 thiserror = "2"
 tempfile = "3"
 

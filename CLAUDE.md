@@ -22,6 +22,7 @@ cargo run -p orchard-grid --release --example demo     # the renderer in a windo
 
 - `orchard-grid`: the wgpu character-grid renderer (`Frame`, `Style`, `BoxStyle`, `FontConfig`, `HeadlessRenderer`, `WindowRenderer`); re-exports `wgpu` and `winit` so apps match its versions.
 - `orchard-theme` (on `orchard-grid`): `schemes` (`ColorScheme`, built-ins, scheme TOML files, `Appearance`, frame styles and font constants), `colors` (`Colors`, `mix`), `theme` (`Theme`), `dirs` (Orchard Commander's config directory and its `color-schemes/` folder, shared by every app).
+- `orchard-kit` (on `orchard-grid` + `orchard-theme`): the app UI kit the Music Player and Download Manager share: `tasks` (worker pool, results run on the UI thread), `input` (key/mouse events), `winit` (winit key events converted), `widgets` (`DrawCtx`, `BoxFrame`, `Scrollbar`, F-key bar, `TextField`), `clipboard` (`text()`, behind the default `clipboard` feature). Orchard Commander keeps its own versions in `oc-ui`.
 
 ## Rules
 

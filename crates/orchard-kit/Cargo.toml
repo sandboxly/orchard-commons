@@ -1,0 +1,16 @@
+[package]
+name = "orchard-kit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The UI kit the Orchard apps share: background tasks, input events, grid widgets and the clipboard"
+
+[features]
+default = ["clipboard"]
+# `clipboard::text()` reads the system clipboard (without it, it returns None).
+clipboard = ["dep:arboard"]
+
+[dependencies]
+orchard-grid.workspace = true
+orchard-theme.workspace = true
+arboard = { version = "3.6", default-features = false, optional = true }
