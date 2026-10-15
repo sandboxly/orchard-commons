@@ -70,3 +70,8 @@ jobs:
 
       - name: Tests
         run: cargo test --locked --workspace --all-features --no-fail-fast
+
+      - name: Kit without the clipboard
+        run: |
+          cargo clippy --locked -p orchard-kit --no-default-features --all-targets -- -D warnings
+          cargo test --locked -p orchard-kit --no-default-features

@@ -9,7 +9,7 @@ renderer, the color schemes and the look.
 |---|---|
 | `orchard-grid` | GPU character-grid renderer (wgpu, winit): a `Frame` of cells, boxes, images and a cursor, drawn into a window or an offscreen image |
 | `orchard-theme` | Color schemes (built-ins plus the user's, in Orchard Commander's `color-schemes/` folder, so a scheme made in its editor shows up in every app), grid `Colors`, the `Theme` (scheme, frame style, font) and where Orchard Commander keeps its config |
-| `orchard-kit` | The app UI kit: background tasks, key and mouse events (converted from winit's), the box frame, scrollbar, F-key bar and text field, clipboard paste (default `clipboard` feature) |
+| `orchard-kit` | The app UI kit: background tasks, key and mouse events (key events converted from winit's), the box frame, scrollbar, F-key bar and text field, clipboard paste (default `clipboard` feature) |
 | `orchard-metadata` | File metadata (for rename placeholders and tag display): audio tags, video and image properties, photo EXIF, and a registry for more providers; reads any seekable stream, independent of where files live |
 
 Lower crates stay free of any UI framework; only `orchard-grid` (and the

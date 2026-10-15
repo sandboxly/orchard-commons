@@ -272,18 +272,28 @@ pub fn draw_key_bar(f: &mut Frame, row: CellRect, keys: &[(&str, &str)], ctx: &D
     }
 }
 
-/// A one-line text field: text and a cursor (char index).
+/// A one-line text field: text and a cursor (char index). The text sits one
+/// cell in from both ends of the field, unless it is [`flush`](TextField::flush).
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct TextField {
     pub text: String,
     pub cursor: usize,
+    /// The text starts in the field's first cell and may use its last
+    /// (narrow fields that must show all their text, like "#rrggbb" in 9 cells).
+    pub flush: bool,
 }
 
 impl TextField {
     pub fn new(text: impl Into<String>) -> Self {
         let text = text.into();
         let cursor = text.chars().count();
-        TextField { text, cursor }
+        TextField { text, cursor, flush: false }
+    }
+
+    /// The same field without the one-cell inset (see [`TextField::flush`]).
+    pub fn flush(mut self) -> Self {
+        self.flush = true;
+        self
     }
 
     fn byte(&self, i: usize) -> usize {
@@ -348,21 +358,22 @@ impl TextField {
 
     /// Replace the text; the cursor goes to its end.
     pub fn set_text(&mut self, text: &str) {
-        *self = TextField::new(text);
+        *self = TextField { flush: self.flush, ..TextField::new(text) };
     }
 
     /// Put the cursor at a click on column `col` of the field drawn in `r`.
     pub fn click(&mut self, r: CellRect, col: u16) {
-        let r = Self::text_area(r);
+        let r = self.text_area(r);
         let n = self.text.chars().count();
         let room = r.cols.saturating_sub(1) as usize;
         let start = self.cursor.saturating_sub(room);
         self.cursor = (start + col.saturating_sub(r.col) as usize).min(n);
     }
 
-    /// Where the text goes: one cell in from both ends (like combo boxes).
-    fn text_area(r: CellRect) -> CellRect {
-        if r.cols < 4 { r } else { CellRect::new(r.col + 1, r.row, r.cols - 2, r.rows) }
+    /// Where the text goes: one cell in from both ends (like combo boxes),
+    /// or all of `r` when flush.
+    fn text_area(&self, r: CellRect) -> CellRect {
+        if self.flush || r.cols < 4 { r } else { CellRect::new(r.col + 1, r.row, r.cols - 2, r.rows) }
     }
 
     /// Draw into one row; the text scrolls to keep the cursor in view.
@@ -381,7 +392,8 @@ impl TextField {
         self.draw_field(f, r, ctx, focused);
         if self.text.is_empty() && !placeholder.is_empty() && r.cols > 2 {
             let c = &ctx.theme.colors;
-            put_elided(f, r.col + 1, r.row, placeholder, Style::new(c.muted, c.background), r.cols - 2);
+            let (col, cols) = if self.flush { (r.col, r.cols) } else { (r.col + 1, r.cols - 2) };
+            put_elided(f, col, r.row, placeholder, Style::new(c.muted, c.background), cols);
         }
     }
 
@@ -391,7 +403,7 @@ impl TextField {
             return;
         }
         f.fill(r, ' ', style);
-        let r = Self::text_area(r);
+        let r = self.text_area(r);
         let chars: Vec<char> = self.text.chars().collect();
         let room = r.cols.saturating_sub(1) as usize;
         let start = self.cursor.saturating_sub(room);
@@ -448,5 +460,30 @@ mod tests {
         let primary = crate::input::Mods { ctrl: true, logo: true, ..Default::default() };
         assert!(t.handle(&KeyEvent::named(Named::Backspace).with(primary)));
         assert_eq!((t.text.as_str(), t.cursor), ("c", 0));
+    }
+
+    #[test]
+    fn hex_fields_fit_flush() {
+        // A scheme editor's "#rrggbb" in 9 cells: inset, the cursor at the end
+        // scrolls the "#" out of view; flush, all of it shows.
+        let theme = Theme::default_dark();
+        let ctx = DrawCtx { theme: &theme, cell_px: (8.0, 16.0) };
+        let r = CellRect::new(2, 0, 9, 1);
+        let show = |t: &TextField| {
+            let mut f = Frame::new(12, 1, theme.colors.background);
+            t.draw_field(&mut f, r, &ctx, true);
+            (f.row_text(0).trim_end().to_string(), f.cursor.map(|c| c.col))
+        };
+        let inset = TextField::new("#a1b2c3");
+        assert_eq!(show(&inset), ("   a1b2c3".into(), Some(9)));
+        let mut flush = TextField::new("#a1b2c3").flush();
+        assert_eq!(show(&flush), ("  #a1b2c3".into(), Some(9)));
+        flush.click(r, 2);
+        assert_eq!(flush.cursor, 0);
+        flush.set_text("#000000");
+        assert!(flush.flush); // kept
+        let mut inset = inset;
+        inset.click(r, 3);
+        assert_eq!(inset.cursor, 1); // the first cell shown is "a"
     }
 }

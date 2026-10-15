@@ -3,6 +3,9 @@ name = "orchard-theme"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
 description = "Color schemes (shared with Orchard Commander's scheme editor), grid colors and the look of the Orchard apps"
 
 [dependencies]
