@@ -6,7 +6,7 @@ license.workspace = true
 authors.workspace = true
 rust-version.workspace = true
 repository.workspace = true
-description = "The UI kit the Orchard apps share: background tasks, input events, grid widgets and the clipboard"
+description = "The UI kit the Orchard apps share: background tasks, input events, grid widgets, dialog forms and the clipboard"
 
 [features]
 default = ["clipboard"]
