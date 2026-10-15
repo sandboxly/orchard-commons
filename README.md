@@ -9,11 +9,13 @@ renderer, the color schemes and the look.
 |---|---|
 | `orchard-grid` | GPU character-grid renderer (wgpu, winit): a `Frame` of cells, boxes, images and a cursor, drawn into a window or an offscreen image |
 | `orchard-theme` | Color schemes (built-ins plus the user's, in Orchard Commander's `color-schemes/` folder, so a scheme made in its editor shows up in every app), grid `Colors`, the `Theme` (scheme, frame style, font) and where Orchard Commander keeps its config |
-| `orchard-kit` | The app UI kit: background tasks, key and mouse events (key events converted from winit's; media keys are left to the app), the box frame, scrollbar, F-key bar and text field (paste and ⌘⌫ unless `plain`), clipboard paste (default `clipboard` feature) |
+| `orchard-kit` | The app UI kit: background tasks, key and mouse events (key events converted from winit's; media keys are left to the app), the box frame, scrollbar, F-key bar and text field (paste and ⌘⌫ unless `plain`), dialog forms (combo box, spin box, checkbox, buttons, a laid-out form with one focused control), clipboard paste (default `clipboard` feature) |
+| `orchard-shell` | The window, event loop and command line of the Music Player and Download Manager: `run` with the app behind the `ShellApp` trait, `--help`/`--version`/`--self-test`/`--screenshot`, the crash log, headless screenshots (PNG, WebP), the app's config folder and JSON settings files |
 | `orchard-metadata` | File metadata (for rename placeholders and tag display): audio tags, video and image properties, photo EXIF, and a registry for more providers; reads any seekable stream, independent of where files live |
 
-Lower crates stay free of any UI framework; only `orchard-grid` (and the
-app kit built on it) know about windows.
+Lower crates stay free of any UI framework; only `orchard-grid` and the
+crates built on it (`orchard-kit`, `orchard-shell`) know about windows, and
+only `orchard-shell` runs an event loop.
 
 ## Using it from an app
 
@@ -21,8 +23,8 @@ Depend on a released tag:
 
 ```toml
 [dependencies]
-orchard-grid = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.1.0" }
-orchard-theme = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.1.0" }
+orchard-grid = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.2.0" }
+orchard-theme = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.2.0" }
 ```
 
 In a workspace, put these under `[workspace.dependencies]` and use
@@ -39,6 +41,7 @@ orchard-grid = { path = "/path/to/orchard-commons/crates/orchard-grid" }
 orchard-theme = { path = "/path/to/orchard-commons/crates/orchard-theme" }
 orchard-kit = { path = "/path/to/orchard-commons/crates/orchard-kit" }
 orchard-metadata = { path = "/path/to/orchard-commons/crates/orchard-metadata" }
+orchard-shell = { path = "/path/to/orchard-commons/crates/orchard-shell" }
 ```
 
 One line per crate the app uses. Keep it out of version control:
@@ -51,7 +54,9 @@ One line per crate the app uses. Keep it out of version control:
   subcommand: `cargo build --config .cargo/commons-patch.toml`.
 - Cargo still fetches the git dependency's repository and tag before applying
   a patch, so the tag the app names must exist upstream (or in Cargo's git
-  cache).
+  cache). The patch may also bring a crate that tag doesn't have yet (a
+  new crate here): name it in `[dependencies]` with the same git URL and tag
+  and it resolves through the patch.
 - A patched build records the crates as local paths in `Cargo.lock`. Don't
   commit that: build without `--locked` while patched, and before committing
   the lockfile run `cargo update -p orchard-grid -p orchard-theme …` without
@@ -63,6 +68,7 @@ One line per crate the app uses. Keep it out of version control:
 cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
 cargo run -p orchard-grid --release --example demo
+cargo run -p orchard-shell --example hello       # the shell, kit and a form
 ```
 
 The renderer tests draw offscreen and skip (with a note) without a GPU
