@@ -450,3 +450,15 @@ fn draws_places_listing_and_buttons() {
     let all: String = (0..20).map(|r| f.row_text(r)).collect::<Vec<_>>().join("\n");
     assert!(!all.contains("Places") && all.contains(&format!("Music{sep}")), "{all}");
 }
+
+#[test]
+fn the_hint_drops_the_least_needed_keys_to_fit() {
+    let d = tree();
+    let (p, _rx) = open(Options::files(d.path()).multi().add_folder().accept("Add to playlist").bookmarks(None));
+    let full = p.hint(500);
+    assert!(full.contains("Esc cancel") && full.contains("⌫ up"), "{full}");
+    let short = p.hint(70);
+    assert!(short.chars().count() <= 70, "{short}");
+    assert!(short.contains("F2 add to playlist") && short.contains("Space mark"), "{short}");
+    assert!(!short.contains("Esc cancel"), "{short}");
+}

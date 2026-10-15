@@ -94,6 +94,8 @@ pub struct Options {
     pub add_folder: bool,
     /// Names starting with "." show too.
     pub hidden: bool,
+    /// Files drawn in the scheme's link color (the music player's playlists).
+    pub highlight: Option<Filter>,
     /// The main button ("Use this folder", "Open file").
     pub accept: String,
     /// The bookmarks file; `None` hides bookmarks (default: Orchard
@@ -114,6 +116,7 @@ impl Options {
             mark_folders: false,
             add_folder: false,
             hidden: false,
+            highlight: None,
             accept: "Use this folder".into(),
             bookmarks: Some(orchard_places::bookmarks_file()),
             places: true,
@@ -163,6 +166,12 @@ impl Options {
 
     pub fn add_folder(mut self) -> Self {
         self.add_folder = true;
+        self
+    }
+
+    /// Draw the files this matches in the link color.
+    pub fn highlight(mut self, f: impl Fn(&Path) -> bool + Send + Sync + 'static) -> Self {
+        self.highlight = Some(std::sync::Arc::new(f));
         self
     }
 
@@ -1026,7 +1035,7 @@ impl Picker {
         let (text, fg) = match &self.note {
             Some(Note::Done(t)) => (t.clone(), c.success),
             Some(Note::Failed(t)) => (t.clone(), c.error),
-            None => (self.hint(), c.muted),
+            None => (self.hint(r.hint.cols as usize), c.muted),
         };
         put_elided(f, r.hint.col, r.hint.row, &text, Style::new(fg, c.surface), r.hint.cols);
         let can_accept = self.location != Location::Drives;
@@ -1039,21 +1048,32 @@ impl Picker {
         }
     }
 
-    fn hint(&self) -> String {
-        let mut parts: Vec<&str> = vec!["Enter open", "⌫ up", "~ home"];
+    /// The key hints that fit in `width` columns: the least needed go first.
+    fn hint(&self, width: usize) -> String {
+        let accept = format!("F2 {}", self.opts.accept.to_lowercase());
+        // (text, drop order: higher goes first)
+        let mut parts: Vec<(&str, u8)> = vec![("Enter open", 2), ("⌫ up", 4), ("~ home", 3)];
         if self.opts.multi_pick() {
-            parts.extend(["Space mark", "* all"]);
+            parts.extend([("Space mark", 0), ("* all", 1)]);
         }
         if self.opts.add_folder {
-            parts.push("F3 add folder");
+            parts.push(("F3 add folder", 0));
         }
         if self.opts.bookmarks.is_some() {
-            parts.push("⌘D bookmarks");
+            parts.push(("⌘D bookmarks", 0));
         }
-        let accept = format!("F2 {}", self.opts.accept.to_lowercase());
-        parts.push(&accept);
-        parts.push("Esc cancel");
-        primary_label(&parts.join(" · "))
+        parts.push((&accept, 0));
+        parts.push(("Esc cancel", 5));
+        loop {
+            let text = primary_label(&parts.iter().map(|p| p.0).collect::<Vec<_>>().join(" · "));
+            let worst = parts.iter().enumerate().filter(|(_, p)| p.1 > 0).max_by_key(|(_, p)| p.1).map(|(i, _)| i);
+            match worst {
+                Some(i) if text.chars().count() > width => {
+                    parts.remove(i);
+                }
+                _ => return text,
+            }
+        }
     }
 
     fn draw_side(&self, f: &mut Frame, area: CellRect, ctx: &DrawCtx) {
@@ -1122,7 +1142,7 @@ impl Picker {
             return;
         };
         let multi = self.opts.multi_pick();
-        let focused = self.focus == Focus::List;
+        let focused = self.focus == Focus::List && self.menu.is_none();
         let rows = self.rows();
         let top = self.top_for(self.top, self.cursor, list.rows as usize);
         for k in 0..list.rows {
@@ -1136,6 +1156,7 @@ impl Picker {
                 None => ("..".to_string(), c.dir),
                 Some(e) if self.location == Location::Drives => (e.name.clone(), c.dir),
                 Some(e) if e.is_dir => (format!("{}{}", e.name, std::path::MAIN_SEPARATOR), c.dir),
+                Some(e) if self.opts.highlight.as_ref().is_some_and(|h| h(&e.path)) => (e.name.clone(), c.link),
                 Some(e) => (e.name.clone(), c.foreground),
             };
             let bg = match (i == self.cursor, focused) {
