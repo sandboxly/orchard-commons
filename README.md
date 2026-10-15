@@ -13,9 +13,9 @@ renderer, the color schemes and the look.
 | `orchard-shell` | The window, event loop and command line of the Music Player and Download Manager: `run` with the app behind the `ShellApp` trait, `--help`/`--version`/`--self-test`/`--screenshot`, the crash log, headless screenshots (PNG, WebP), the app's config folder and JSON settings files |
 | `orchard-metadata` | File metadata (for rename placeholders and tag display): audio tags, video and image properties, photo EXIF, and a registry for more providers; reads any seekable stream, independent of where files live |
 
-Lower crates stay free of any UI framework; only `orchard-grid` and the
-crates built on it (`orchard-kit`, `orchard-shell`) know about windows, and
-only `orchard-shell` runs an event loop.
+Lower crates stay free of any UI framework; only `orchard-grid`, the app kit
+and `orchard-shell` know about windows, and only `orchard-shell` runs an event
+loop.
 
 ## Using it from an app
 

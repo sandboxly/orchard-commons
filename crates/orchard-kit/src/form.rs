@@ -99,7 +99,7 @@ pub fn spin_hit(r: CellRect, col: u16) -> i32 {
     if col < r.col + r.cols / 2 { -1 } else { 1 }
 }
 
-/// A checkbox: "[x] Label"; the focused one in the active color.
+/// A checkbox: `[x] Label`; the focused one in the active color.
 pub fn draw_check(f: &mut Frame, r: CellRect, text: &str, on: bool, focused: bool, ctx: &DrawCtx) {
     let c = &ctx.theme.colors;
     let style = Style::new(if focused { c.border_active } else { c.foreground }, c.surface);
