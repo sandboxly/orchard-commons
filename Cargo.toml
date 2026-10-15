@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 license = "MIT"
 authors = ["Stephan Lengl <lengl.stephan@gmail.com>"]
@@ -15,6 +15,7 @@ orchard-grid = { path = "crates/orchard-grid" }
 orchard-theme = { path = "crates/orchard-theme" }
 orchard-kit = { path = "crates/orchard-kit" }
 orchard-metadata = { path = "crates/orchard-metadata" }
+orchard-shell = { path = "crates/orchard-shell" }
 thiserror = "2"
 tempfile = "3"
 

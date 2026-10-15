@@ -1,0 +1,31 @@
+[package]
+name = "orchard-shell"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+description = "The window, event loop and command line the Orchard apps share"
+
+[dependencies]
+orchard-grid.workspace = true
+orchard-kit.workspace = true
+log = "0.4"
+# Screenshots: PNG, or lossless WebP for a `.webp` name.
+image = { version = "0.25", default-features = false, features = ["png", "webp"] }
+# The apps' settings files (JSON in their config folders).
+serde = "1"
+serde_json = "1"
+dirs = "6"
+
+[target.'cfg(windows)'.dependencies]
+# Print --version/--self-test output to the console that started the app
+# (a GUI program there).
+windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
+
+[dev-dependencies]
+tempfile.workspace = true
+serde = { version = "1", features = ["derive"] }
+# The example's color scheme.
+orchard-theme.workspace = true
