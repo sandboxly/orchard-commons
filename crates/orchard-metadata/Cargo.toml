@@ -1,0 +1,12 @@
+[package]
+name = "orchard-metadata"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "File metadata for the Orchard apps: audio tags, video and image properties, photo EXIF, and a registry for more providers"
+
+[dependencies]
+regex = "1.13"
+lofty = "0.24.0"
+kamadak-exif = "0.6.1"
+imagesize = "0.15"

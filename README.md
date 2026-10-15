@@ -10,6 +10,7 @@ renderer, the color schemes and the look.
 | `orchard-grid` | GPU character-grid renderer (wgpu, winit): a `Frame` of cells, boxes, images and a cursor, drawn into a window or an offscreen image |
 | `orchard-theme` | Color schemes (built-ins plus the user's, in Orchard Commander's `color-schemes/` folder, so a scheme made in its editor shows up in every app), grid `Colors`, the `Theme` (scheme, frame style, font) and where Orchard Commander keeps its config |
 | `orchard-kit` | The app UI kit: background tasks, key and mouse events (converted from winit's), the box frame, scrollbar, F-key bar and text field, clipboard paste (default `clipboard` feature) |
+| `orchard-metadata` | File metadata (for rename placeholders and tag display): audio tags, video and image properties, photo EXIF, and a registry for more providers; reads any seekable stream, independent of where files live |
 
 Lower crates stay free of any UI framework; only `orchard-grid` (and the
 app kit built on it) know about windows.
@@ -38,6 +39,7 @@ this checkout with a `[patch]`, in the app repository's `.cargo/config.toml`
 orchard-grid = { path = "/path/to/orchard-commons/crates/orchard-grid" }
 orchard-theme = { path = "/path/to/orchard-commons/crates/orchard-theme" }
 orchard-kit = { path = "/path/to/orchard-commons/crates/orchard-kit" }
+orchard-metadata = { path = "/path/to/orchard-commons/crates/orchard-metadata" }
 ```
 
 One line per crate the app uses. Remove the file to go back to the tag.
