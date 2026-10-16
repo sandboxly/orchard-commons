@@ -4,7 +4,9 @@
 //!
 //! - [`run`]: the winit event loop, the window and its GPU surface, redraws
 //!   and animation frames, font changes, key and mouse conversion, wake-ups
-//!   from workers, and `<APP>_EXIT_AFTER_START=1` for packaging checks.
+//!   from workers, and `<APP>_EXIT_AFTER_START=1` for packaging checks;
+//!   a second window for a [`Popup`] (a question that should come up where
+//!   the user is and take the focus).
 //! - [`cli`]: `--help`, `--version`, `--self-test` and `--screenshot`, the
 //!   crash log, and (on Windows) printing to the console that started the
 //!   app.
@@ -19,7 +21,7 @@ pub mod config;
 mod event_loop;
 pub mod shot;
 
-pub use event_loop::{ShellApp, run};
+pub use event_loop::{Popup, ShellApp, run};
 
 /// What the shell needs to know about an app; one `const` per app.
 #[derive(Clone, Copy, Debug)]

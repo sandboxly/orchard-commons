@@ -7,11 +7,11 @@ renderer, the color schemes and the look.
 
 | Crate | What it is |
 |---|---|
-| `orchard-grid` | GPU character-grid renderer (wgpu, winit): a `Frame` of cells, boxes, images and a cursor, drawn into a window or an offscreen image |
+| `orchard-grid` | GPU character-grid renderer (wgpu, winit): a `Frame` of cells, boxes, images and a cursor, drawn into a window or an offscreen image; an app's windows share one GPU (`Gpu`) |
 | `orchard-theme` | Color schemes (built-ins plus the user's, in Orchard Commander's `color-schemes/` folder, so a scheme made in its editor shows up in every app), grid `Colors`, the `Theme` (scheme, frame style, font) and where Orchard Commander keeps its config |
 | `orchard-kit` | The app UI kit: background tasks, key and mouse events (key events converted from winit's; media keys are left to the app), the box frame, scrollbar, F-key bar and text field (paste and ⌘⌫ unless `plain`), dialog forms (combo box, spin box, checkbox, buttons, a laid-out form with one focused control), a hotkey menu with submenus (the bookmark menu), the file and folder picker (places column, Orchard Commander's bookmarks on ⌘D, marking, type-ahead, listing off the UI thread), clipboard paste (default `clipboard` feature) |
 | `orchard-places` | What the pickers offer besides the listing: Orchard Commander's bookmarks (its `bookmarks.json`, read fresh and added to safely while other apps use it, so a folder bookmarked in one app shows up in all of them), the home folder, the standard folders, drives and mounted volumes |
-| `orchard-shell` | The window, event loop and command line of the Music Player and Download Manager: `run` with the app behind the `ShellApp` trait, `--help`/`--version`/`--self-test`/`--screenshot`, the crash log, headless screenshots (PNG, WebP), the app's config folder and JSON settings files |
+| `orchard-shell` | The window, event loop and command line of the Music Player and Download Manager: `run` with the app behind the `ShellApp` trait (and a second window, the `Popup`, for a question that should come up where the user is), `--help`/`--version`/`--self-test`/`--screenshot`, the crash log, headless screenshots (PNG, WebP), the app's config folder and JSON settings files |
 | `orchard-metadata` | File metadata (for rename placeholders and tag display): audio tags, video and image properties, photo EXIF, and a registry for more providers; reads any seekable stream, independent of where files live |
 
 Lower crates (`orchard-places`, `orchard-metadata`) stay
