@@ -24,11 +24,25 @@ pub enum Rendered {
     Retry,
 }
 
+/// What windows draw with: the wgpu instance, adapter, device and queue.
+/// An app's windows share one ([`WindowRenderer::with_gpu`]) and keep it
+/// until the app ends: with NVIDIA's driver on Wayland, destroying one
+/// window's own GPU context wipes the driver's Wayland functions for every
+/// other window, and the next frame there crashes. Clones share it.
+#[derive(Clone, Debug)]
+pub struct Gpu {
+    instance: wgpu::Instance,
+    adapter: wgpu::Adapter,
+    device: wgpu::Device,
+    queue: wgpu::Queue,
+}
+
 pub struct WindowRenderer {
     window: Arc<Window>,
     surface: wgpu::Surface<'static>,
     config: wgpu::SurfaceConfiguration,
     renderer: GridRenderer,
+    gpu: Gpu,
 }
 
 impl WindowRenderer {
@@ -50,7 +64,42 @@ impl WindowRenderer {
             .create_surface(window.clone())
             .map_err(|e| GridError::Surface(e.to_string()))?;
         let (adapter, device, queue) = crate::headless::open_device(&instance, Some(&surface))?;
-        let caps = surface.get_capabilities(&adapter);
+        let gpu = Gpu {
+            instance,
+            adapter,
+            device,
+            queue,
+        };
+        Self::with_surface(window, surface, gpu, library, font)
+    }
+
+    /// Another window of the app, on the GPU of one it has (see [`Gpu`]).
+    pub fn with_gpu(
+        window: Arc<Window>,
+        gpu: &Gpu,
+        library: Arc<FontLibrary>,
+        font: FontConfig,
+    ) -> Result<Self, GridError> {
+        let surface = gpu
+            .instance
+            .create_surface(window.clone())
+            .map_err(|e| GridError::Surface(e.to_string()))?;
+        if !gpu.adapter.is_surface_supported(&surface) {
+            return Err(GridError::Surface(
+                "the GPU can't draw into this window".into(),
+            ));
+        }
+        Self::with_surface(window, surface, gpu.clone(), library, font)
+    }
+
+    fn with_surface(
+        window: Arc<Window>,
+        surface: wgpu::Surface<'static>,
+        gpu: Gpu,
+        library: Arc<FontLibrary>,
+        font: FontConfig,
+    ) -> Result<Self, GridError> {
+        let caps = surface.get_capabilities(&gpu.adapter);
         // A non-sRGB format: colors are blended in sRGB space, like Qt.
         let format = caps
             .formats
@@ -80,15 +129,28 @@ impl WindowRenderer {
             view_formats: vec![],
             color_space: Default::default(),
         };
-        surface.configure(&device, &config);
+        surface.configure(&gpu.device, &config);
         let scale = window.scale_factor() as f32;
-        let renderer = GridRenderer::new(device, queue, format, library, font, scale)?;
+        let renderer = GridRenderer::new(
+            gpu.device.clone(),
+            gpu.queue.clone(),
+            format,
+            library,
+            font,
+            scale,
+        )?;
         Ok(WindowRenderer {
             window,
             surface,
             config,
             renderer,
+            gpu,
         })
+    }
+
+    /// The GPU this window draws with, for the app's other windows.
+    pub fn gpu(&self) -> &Gpu {
+        &self.gpu
     }
 
     pub fn window(&self) -> &Window {
