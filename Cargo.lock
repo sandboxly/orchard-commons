@@ -1449,7 +1449,7 @@ dependencies = [
 
 [[package]]
 name = "orchard-grid"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "bytemuck",
  "fontdb",
@@ -1468,7 +1468,7 @@ dependencies = [
 
 [[package]]
 name = "orchard-kit"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "arboard",
  "dirs",
@@ -1480,7 +1480,7 @@ dependencies = [
 
 [[package]]
 name = "orchard-metadata"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "imagesize",
  "jpeg-encoder",
@@ -1493,7 +1493,7 @@ dependencies = [
 
 [[package]]
 name = "orchard-places"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "dirs",
  "orchard-theme",
@@ -1506,7 +1506,7 @@ dependencies = [
 
 [[package]]
 name = "orchard-shell"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "dirs",
  "image",
@@ -1522,7 +1522,7 @@ dependencies = [
 
 [[package]]
 name = "orchard-theme"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "dirs",
  "orchard-grid",
