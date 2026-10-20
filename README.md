@@ -25,8 +25,8 @@ Depend on a released tag:
 
 ```toml
 [dependencies]
-orchard-grid = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.4.0" }
-orchard-theme = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.4.0" }
+orchard-grid = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.4.1" }
+orchard-theme = { git = "https://github.com/sandboxly/orchard-commons", tag = "v0.4.1" }
 ```
 
 In a workspace, put these under `[workspace.dependencies]` and use
