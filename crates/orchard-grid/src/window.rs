@@ -100,13 +100,7 @@ impl WindowRenderer {
         font: FontConfig,
     ) -> Result<Self, GridError> {
         let caps = surface.get_capabilities(&gpu.adapter);
-        // A non-sRGB format: colors are blended in sRGB space, like Qt.
-        let format = caps
-            .formats
-            .iter()
-            .copied()
-            .find(|f| !f.is_srgb())
-            .or_else(|| caps.formats.first().copied())
+        let format = surface_format(&caps.formats)
             .ok_or_else(|| GridError::Surface("surface supports no formats".into()))?;
         let size = window.inner_size();
         let config = wgpu::SurfaceConfiguration {
@@ -232,5 +226,61 @@ impl WindowRenderer {
             self.surface.configure(self.renderer.device(), &self.config);
         }
         Ok(Rendered::Shown(stats))
+    }
+}
+
+/// The surface format to draw in: 8-bit non-sRGB when offered, so colors are
+/// blended in sRGB space, like Qt. Some drivers list a 16-bit float format
+/// first, which compositors read as linear light: sRGB values shown that way
+/// look washed out. Falls back to any non-sRGB format, then to the first.
+fn surface_format(formats: &[wgpu::TextureFormat]) -> Option<wgpu::TextureFormat> {
+    use wgpu::TextureFormat::{Bgra8Unorm, Rgba8Unorm};
+    [Bgra8Unorm, Rgba8Unorm]
+        .into_iter()
+        .find(|f| formats.contains(f))
+        .or_else(|| {
+            formats
+                .iter()
+                .copied()
+                .find(|f| !f.is_srgb() && !is_float(*f))
+        })
+        .or_else(|| formats.iter().copied().find(|f| !f.is_srgb()))
+        .or_else(|| formats.first().copied())
+}
+
+fn is_float(format: wgpu::TextureFormat) -> bool {
+    matches!(
+        format,
+        wgpu::TextureFormat::Rgba16Float
+            | wgpu::TextureFormat::Rgba32Float
+            | wgpu::TextureFormat::Rg11b10Ufloat
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::surface_format;
+    use wgpu::TextureFormat::*;
+
+    #[test]
+    fn prefers_8_bit_over_float_listed_first() {
+        let formats = [
+            Rgba16Float,
+            Rgb10a2Unorm,
+            Bgra8UnormSrgb,
+            Bgra8Unorm,
+            Rgba8Unorm,
+        ];
+        assert_eq!(surface_format(&formats), Some(Bgra8Unorm));
+    }
+
+    #[test]
+    fn falls_back_to_non_srgb_then_first() {
+        assert_eq!(
+            surface_format(&[Rgba16Float, Rgb10a2Unorm]),
+            Some(Rgb10a2Unorm)
+        );
+        assert_eq!(surface_format(&[Bgra8UnormSrgb]), Some(Bgra8UnormSrgb));
+        assert_eq!(surface_format(&[]), None);
     }
 }
